@@ -1,20 +1,55 @@
-import { useState ,useCallback } from "react"
+import { useState ,useCallback ,useEffect ,useRef} from "react";
 
 function App() {
 
   const [length , setLength] = useState(8);
   const [numberAllowed ,setNumberAllowed ] =useState(false);
-  const [charAllowed ,setCharAllowed] =useState(false);
+  const [charAllowed ,setCharAllowed] =useState(false); 
 
   const [password ,setPassword] = useState("");
 
-  const passwordGenerator = useCallback(()=>{
+  // useRef
+    const passwordRef = useRef(null);
 
-  } ,[length .numberAllowed,charAllowed])
+
+  // useCallback Hook 
+  const passwordGenerator = useCallback(()=>{
+    let pass="";
+    let str ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    if(numberAllowed) str +="0123456789";
+    if(charAllowed) str +="!@#$%^&*-_+={}[]~`";
+
+    for(let i = 1; i<=length ;i++){
+      let char = (Math.floor(Math.random()*str.length +1));
+
+      pass +=str.charAt(char);
+    }
+
+    setPassword(pass);
+
+  } ,[length , numberAllowed , charAllowed ])
+
+
+
+  // copy 
+  const copyPasswordToClipboard =useCallback(()=>{
+     passwordRef.current?.select();
+     passwordRef.current?.setSelectionRange(0 , 101);
+      window.navigator.clipboard.writeText(password)
+    } ,[password])
+
+
+  //useeffect  Hook  
+  useEffect(()=>{
+    passwordGenerator();  
+  } ,[length , numberAllowed , charAllowed ,passwordGenerator])
+
+ 
 
   return (
     <>
-      <div className='w-full max-w-md max-auto shadow-md rounded-lg px-4 py-4 my-8 text-orange-500 bg-gray-800 '> 
+      <div className='w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-4 my-8 text-orange-500 bg-gray-800 '> 
       <h1 className="text-white text-center my-3">Password Generator</h1>
       
         <div className="flex shadow rounded-lg overflow-hidden mb-4">
@@ -24,8 +59,11 @@ function App() {
              className="outline-none w-full py-1 px-3"
              placeholder="password"
              readOnly
+             ref={passwordRef}
              />
-             <button className="outline-none bg-blue-700 text-white px-2"> Copy</button>
+             <button  
+             onClick={copyPasswordToClipboard}
+             className="outline-none bg-blue-700 text-white px-2"> Copy</button>
           
         </div>
         <div className="flex text-sm gap-x-2">
@@ -35,18 +73,37 @@ function App() {
                     max={100}
                     value={length}
                     className="cursor-pointer"
-                    onChange={()=>{setLength(e.target.value)}}
+                    onChange={(e)=>{setLength(e.target.value)}}
                   />
                  <label>Length : {length}</label>
 
               </div>
+              <div className="flex items-center gap-x-1">
+              <input 
+                type="checkbox"
+                defaultChecked={numberAllowed}
+                id="numberInout"
+                onChange={()=>{
+                  setNumberAllowed((prev)=>!prev);
+                }}
+              />
+              <label>Numbers</label>
+
+              </div>
+              <div className="flex items-center gap-x-1">
+              <input 
+                type="checkbox"
+                defaultChecked={numberAllowed}
+                id="numberInout"
+                onChange={()=>{
+                  setCharAllowed((prev)=>!prev);
+                }}
+              />
+              <label>Characters</label>
+              </div>
 
         </div>
-      
-
        </div>
-
-
     </>
 
   );
